@@ -1,0 +1,98 @@
+name: Build NEON RUN for Android
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Install Android 16 SDK
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - name: Install dependencies
+        run: npm install
+      - name: Validate JavaScript modules
+        run: npm run check
+      - name: Build web assets
+        run: npm run build
+      - name: Generate Android project
+        run: npx cap add android
+      - name: Sync Capacitor
+        run: npx cap sync android
+      - name: Set Android API 36
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path('android/variables.gradle')
+          s = p.read_text()
+          for key, value in [('compileSdkVersion', '36'), ('targetSdkVersion', '36'), ('minSdkVersion', '24')]:
+              s, count = re.subn(rf'{key}\s*=\s*\d+', f'{key} = {value}', s, count=1)
+              if count != 1:
+                  raise SystemExit(f'Could not set {key} in variables.gradle')
+          p.write_text(s)
+          PY
+      - name: Configure release signing (optional)
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "No upload keystore configured; release AAB will be unsigned."
+            exit 0
+          fi
+          echo "$KEYSTORE_B64" | base64 --decode > android/app/upload-keystore.jks
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path('android/app/build.gradle')
+          s = p.read_text()
+          signing = '''
+              signingConfigs {
+                  release {
+                      storeFile file("upload-keystore.jks")
+                      storePassword System.getenv("STORE_PASSWORD")
+                      keyAlias System.getenv("KEY_ALIAS")
+                      keyPassword System.getenv("KEY_PASSWORD")
+                  }
+              }
+          '''
+          s = s.replace('android {', 'android {' + signing, 1)
+          pattern = r'(buildTypes\s*\{\s*release\s*\{)'
+          s, count = re.subn(pattern, r'\1\n            signingConfig signingConfigs.release', s, count=1)
+          if count != 1:
+              raise SystemExit('Could not attach the release signing config')
+          p.write_text(s)
+          PY
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+      - name: Build release AAB
+        working-directory: android
+        run: ./gradlew bundleRelease --no-daemon
+      - name: Upload Android artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: neon-run-android
+          path: |
+            android/app/build/outputs/apk/debug/app-debug.apk
+            android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 14
