@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#070817">
+  <meta name="description" content="NEON: یک بازی آرکید سریع، نئونی و بی‌پایان برای موبایل">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>NEON — فراتر از سرعت</title>
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+<main id="app">
+  <canvas id="game" aria-label="محیط بازی نئون"></canvas>
+  <header class="hud" id="hud" hidden>
+    <div class="hud-left">
+      <div class="chip"><small>امتیاز</small><b id="score">۰</b></div>
+      <div class="chip gold"><small>کریستال</small><b id="runCoins">۰</b></div>
+      <div class="chip pink" id="comboChip" hidden><small>کمبو</small><b id="combo">×۲</b></div>
+    </div>
+    <div class="hud-right">
+      <button class="round-btn" id="soundBtn" aria-label="صدا">♫</button>
+      <button class="round-btn" id="pauseBtn" aria-label="توقف">Ⅱ</button>
+    </div>
+  </header>
+  <div class="power-meter" id="powerMeter" hidden><span id="powerLabel">شارژ نئون</span><div><i id="powerFill"></i></div></div>
+  <div class="toast" id="toast" aria-live="polite"></div>
+  <section class="screen" id="homeScreen">
+    <div class="brand"><span class="brand-mark">N</span><div><h1>NEON<span>RUN</span></h1><p>فراتر از سرعت برو</p></div></div>
+    <div class="hero-card">
+      <div class="hero-kicker">ARCADE • ENDLESS RUNNER</div>
+      <div class="hero-title">شهر در حال<br><em>بیدار شدن است.</em></div>
+      <p class="muted">بپر، جاخالی بده، کریستال جمع کن و رکوردت را بشکن.</p>
+      <div class="home-stats"><div><small>بالاترین رکورد</small><b id="bestScore">۰</b></div><div><small>کریستال‌ها</small><b id="wallet">۰</b></div><div><small>مرحله</small><b id="bestZone">۱</b></div></div>
+      <button class="primary" id="playBtn">شروع مأموریت <span>←</span></button>
+      <div class="home-actions"><button class="secondary" id="shopBtn">فروشگاه</button><button class="secondary" id="missionsBtn">مأموریت‌ها</button><button class="secondary" id="statsBtn">آمار من</button></div>
+    </div>
+    <div class="hint"><span class="key">TAP</span> لمس برای پرش دوگانه <span class="dot">•</span> کشیدن به پایین برای فرود سریع</div>
+  </section>
+  <section class="screen" id="pauseScreen" hidden><div class="dialog"><div class="eyebrow">MISSION PAUSED</div><h2>مکث کوتاه</h2><p class="muted">شهر منتظر ادامه مسیر توست.</p><button class="primary" id="resumeBtn">ادامه بازی</button><button class="secondary wide" id="restartBtn">شروع دوباره</button><button class="text-btn" id="homeBtn">بازگشت به منو</button></div></section>
+  <section class="screen" id="overScreen" hidden><div class="dialog"><div class="eyebrow">RUN COMPLETE</div><h2 id="overTitle">پایان مسیر</h2><p class="muted" id="overMessage">هر بار بهتر از قبل.</p><div class="result-grid"><div><small>امتیاز</small><b id="finalScore">۰</b></div><div><small>کریستال</small><b id="finalCoins">۰</b></div><div><small>بهترین</small><b id="finalBest">۰</b></div></div><button class="primary" id="againBtn">دوباره تلاش کن</button><button class="secondary wide" id="overHomeBtn">منوی اصلی</button></div></section>
+  <section class="screen" id="shopScreen" hidden><div class="panel"><div class="panel-head"><div><div class="eyebrow">NEON GARAGE</div><h2>گاراژ نئون</h2></div><div class="balance">◆ <b id="shopWallet">۰</b></div></div><div class="tabs"><button class="tab active" data-tab="skins">اسکین‌ها</button><button class="tab" data-tab="upgrades">ارتقاها</button></div><div class="shop-list" id="shopList"></div><button class="secondary wide" id="shopBack">بازگشت</button></div></section>
+  <section class="screen" id="missionsScreen" hidden><div class="panel"><div class="eyebrow">CAREER CHALLENGES</div><h2>مأموریت‌ها</h2><p class="muted">با انجام چالش‌ها، کریستال بیشتری بگیر.</p><div class="mission-list" id="missionList"></div><button class="secondary wide" id="missionsBack">بازگشت</button></div></section>
+  <section class="screen" id="statsScreen" hidden><div class="panel"><div class="eyebrow">PLAYER PROFILE</div><h2>کارنامه تو</h2><div class="profile-grid" id="profileStats"></div><button class="secondary wide" id="statsBack">بازگشت</button></div></section>
+  <footer class="version">NEON RUN <span>•</span> v2.0</footer>
+</main>
+<script type="module" src="src/app.js"></script>
+</body>
+</html>
